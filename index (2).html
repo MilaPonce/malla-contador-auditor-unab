@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Malla Curricular Interactiva</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #2a2a2a;
+    }
+    .grid {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .semestre {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      min-width: 200px;
+    }
+    .semestre h2 {
+      color: #000;
+      text-align: center;
+    }
+    .ramo {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+      background: #eeeeee;
+      color: #000;
+      cursor: pointer;
+    }
+    .ramo.hidden {
+      display: none;
+    }
+    .ramo.locked {
+      background: #444444;
+      color: #fff;
+      opacity: 0.4;
+    }
+    .ramo.completed {
+      background: #2b3e50;
+      color: #fff;
+      opacity: 1 !important;
+    }
+    #progressContainer {
+      width: 80%;
+      margin: 0 auto 20px auto;
+      background: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #progressBar {
+      height: 20px;
+      background: #4caf50;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    #progressText {
+      text-align: center;
+      margin-top: 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="progressContainer">
+    <div id="progressBar"></div>
+  </div>
+  <div id="progressText">Avance: 0%</div>
+  <h1>Malla Curricular - Contador Auditor</h1>
+  <div class="grid" id="mallaGrid">
+    <div class="semestre">
+      <h2>1º Semestre</h2>
+      <div class="ramo" id="fundamentos" onclick="toggleRamo(this)">Fundamentos Contables</div>
+      <div class="ramo" id="informatica" onclick="toggleRamo(this)">Informática</div>
+      <div class="ramo" id="gestion_empresas" onclick="toggleRamo(this)">Gestión de Empresas</div>
+      <div class="ramo" id="matematicas" onclick="toggleRamo(this)">Matemáticas</div>
+      <div class="ramo" id="fg1" onclick="toggleRamo(this)">Formación General I</div>
+    </div>
+    <div class="semestre">
+      <h2>2º Semestre</h2>
+      <div class="ramo hidden locked" id="contab1" data-prereq="fundamentos,informatica" onclick="toggleRamo(this)">Contabilidad Financiera I</div>
+      <div class="ramo" id="mat_neg" onclick="toggleRamo(this)">Matemáticas para los Negocios</div>
+      <div class="ramo" id="leg_lab" onclick="toggleRamo(this)">Legislación Laboral y Comercial</div>
+      <div class="ramo" id="ingles1" onclick="toggleRamo(this)">Inglés I</div>
+      <div class="ramo hidden locked" id="fg2" data-prereq="fg1" onclick="toggleRamo(this)">Formación General II</div>
+    </div>
+  </div>
+  <script>
+    function toggleRamo(ramoDiv) {
+      const wasCompleted = ramoDiv.classList.contains("completed");
+      ramoDiv.classList.toggle("completed");
+      ramoDiv.classList.remove("locked");
+
+      document.querySelectorAll('.ramo[data-prereq]').forEach(ramo => {
+        const prereqs = ramo.dataset.prereq.split(',');
+        const met = prereqs.every(id => {
+          const el = document.getElementById(id);
+          return el && el.classList.contains('completed');
+        });
+        if (met) {
+          ramo.classList.remove('hidden');
+          ramo.classList.remove('locked');
+        } else if (!wasCompleted) {
+          ramo.classList.add('locked');
+          ramo.classList.add('hidden');
+        }
+      });
+
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const all = document.querySelectorAll('.ramo');
+      const completed = document.querySelectorAll('.ramo.completed');
+      const percent = all.length ? Math.round((completed.length / all.length) * 100) : 0;
+      document.getElementById('progressBar').style.width = percent + '%';
+      document.getElementById('progressText').textContent = `Avance: ${percent}%`;
+    }
+
+    updateProgress();
+  </script>
+</body>
+</html>
