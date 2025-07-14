@@ -78,25 +78,87 @@
   </div>
   <div id="progressText">Avance: 0%</div>
   <h1>Malla Curricular - Contador Auditor</h1>
-  <div class="grid" id="mallaGrid">
-    <div class="semestre">
-      <h2>1º Semestre</h2>
-      <div class="ramo" id="fundamentos" onclick="toggleRamo(this)">Fundamentos Contables</div>
-      <div class="ramo" id="informatica" onclick="toggleRamo(this)">Informática</div>
-      <div class="ramo" id="gestion_empresas" onclick="toggleRamo(this)">Gestión de Empresas</div>
-      <div class="ramo" id="matematicas" onclick="toggleRamo(this)">Matemáticas</div>
-      <div class="ramo" id="fg1" onclick="toggleRamo(this)">Formación General I</div>
-    </div>
-    <div class="semestre">
-      <h2>2º Semestre</h2>
-      <div class="ramo hidden locked" id="contab1" data-prereq="fundamentos,informatica" onclick="toggleRamo(this)">Contabilidad Financiera I</div>
-      <div class="ramo" id="mat_neg" onclick="toggleRamo(this)">Matemáticas para los Negocios</div>
-      <div class="ramo" id="leg_lab" onclick="toggleRamo(this)">Legislación Laboral y Comercial</div>
-      <div class="ramo" id="ingles1" onclick="toggleRamo(this)">Inglés I</div>
-      <div class="ramo hidden locked" id="fg2" data-prereq="fg1" onclick="toggleRamo(this)">Formación General II</div>
-    </div>
-  </div>
+  <div class="grid" id="mallaGrid"></div>
+
   <script>
+    const malla = [
+      { semestre: 1, ramos: [
+        { id: "fundamentos", nombre: "Fundamentos Contables" },
+        { id: "informatica", nombre: "Informática" },
+        { id: "gestion_empresas", nombre: "Gestión de Empresas" },
+        { id: "matematicas", nombre: "Matemáticas" },
+        { id: "fg1", nombre: "Formación General I" }
+      ] },
+      { semestre: 2, ramos: [
+        { id: "contab1", nombre: "Contabilidad Financiera I", prereq: ["fundamentos", "informatica"] },
+        { id: "mat_neg", nombre: "Matemáticas para los Negocios" },
+        { id: "leg_lab", nombre: "Legislación Laboral y Comercial" },
+        { id: "ingles1", nombre: "Inglés I" },
+        { id: "fg2", nombre: "Formación General II", prereq: ["fg1"] }
+      ] },
+      { semestre: 3, ramos: [
+        { id: "contab2", nombre: "Contabilidad Financiera II", prereq: ["contab1"] },
+        { id: "costos", nombre: "Costos", prereq: ["contab1", "fg1"] },
+        { id: "leg_trib", nombre: "Legislación Tributaria", prereq: ["leg_lab"] },
+        { id: "estadistica", nombre: "Estadística", prereq: ["mat_neg"] },
+        { id: "ingles2", nombre: "Inglés II", prereq: ["ingles1"] }
+      ] },
+      { semestre: 4, ramos: [
+        { id: "contab3", nombre: "Contabilidad Financiera III", prereq: ["contab2"] },
+        { id: "eco1", nombre: "Economía I", prereq: ["matematicas"] },
+        { id: "presup", nombre: "Presupuestos", prereq: ["costos"] },
+        { id: "ingles3", nombre: "Inglés III", prereq: ["ingles2"] },
+        { id: "fg3", nombre: "Formación General III", prereq: ["fg2"] }
+      ] },
+      { semestre: 5, ramos: [
+        { id: "eco2", nombre: "Economía II", prereq: ["eco1"] },
+        { id: "finanzas1", nombre: "Finanzas I", prereq: ["presup"] },
+        { id: "auditoria", nombre: "Auditoría", prereq: ["contab2"] },
+        { id: "gestion_estrategica", nombre: "Gestión Estratégica", prereq: ["presup"] },
+        { id: "ingles4", nombre: "Inglés IV", prereq: ["ingles3"] }
+      ] },
+      { semestre: 6, ramos: [
+        { id: "finanzas2", nombre: "Finanzas II", prereq: ["finanzas1", "estadistica"] },
+        { id: "auditoria_gestion", nombre: "Auditoría a la Gestión", prereq: ["auditoria"] },
+        { id: "pp1", nombre: "Práctica Profesional I", prereq: ["costos"] },
+        { id: "control_gestion", nombre: "Control a la Gestión", prereq: ["gestion_estrategica"] },
+        { id: "fg4", nombre: "Formación General IV", prereq: ["fg3"] }
+      ] },
+      { semestre: 7, ramos: [
+        { id: "imp_ind", nombre: "Impuestos Indirectos", prereq: ["leg_trib"] },
+        { id: "integrador1", nombre: "Integrador I", prereq: ["contab3", "finanzas1"] },
+        { id: "pp2", nombre: "Práctica Profesional II", prereq: ["eco2", "auditoria", "ingles4"] },
+        { id: "etica", nombre: "Ética", prereq: ["gestion_estrategica"] }
+      ] },
+      { semestre: 8, ramos: [
+        { id: "imp_emp", nombre: "Impuesto Empresas", prereq: ["imp_ind"] },
+        { id: "imp_pers", nombre: "Impuesto a las Personas", prereq: ["imp_ind"] },
+        { id: "aud_estados", nombre: "Auditoría a los Estados Financieros", prereq: ["contab3"] },
+        { id: "integrador2", nombre: "Integrador II", prereq: ["integrador1", "aud_estados", "pp2"] },
+        { id: "riesgos", nombre: "Gestión de Riesgos", prereq: ["control_gestion"] }
+      ] }
+    ];
+
+    const grid = document.getElementById("mallaGrid");
+    malla.forEach(s => {
+      const col = document.createElement("div");
+      col.className = "semestre";
+      col.innerHTML = `<h2>${s.semestre}º Semestre</h2>`;
+      s.ramos.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "ramo";
+        div.id = r.id;
+        div.textContent = r.nombre;
+        if (r.prereq) {
+          div.classList.add("hidden", "locked");
+          div.dataset.prereq = r.prereq.join(",");
+        }
+        div.onclick = () => toggleRamo(div);
+        col.appendChild(div);
+      });
+      grid.appendChild(col);
+    });
+
     function toggleRamo(ramoDiv) {
       const wasCompleted = ramoDiv.classList.contains("completed");
       ramoDiv.classList.toggle("completed");
